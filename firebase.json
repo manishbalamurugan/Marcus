@@ -10,7 +10,15 @@
       {
         "source": "/api/**",
         "destination": "app"
+      },
+      {
+        "source": "**",
+        "destination": "/index.html"
       }
     ]
+  },
+  "functions": {
+    "source": "api",
+    "runtime": "nodejs16"
   }
 }

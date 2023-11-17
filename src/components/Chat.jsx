@@ -73,7 +73,7 @@ export default function  Chat(props) {
         const fetchReply = async () => {
           try {
             // Fetch the chatbot's reply
-            const response = await fetch("http://localhost:4200/api/ask", {
+            const response = await fetch("/api/ask", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ messages }),
@@ -83,7 +83,7 @@ export default function  Chat(props) {
               setMessages([...messages, reply]);
         
             // Store the conversation history
-            await fetch("http://localhost:4200/api/store", {
+            await fetch("/api/store", {
               method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({ uuid, messages: [...messages, reply] }),
@@ -114,11 +114,11 @@ export default function  Chat(props) {
                         {messages.slice(1).map((message, index) => (
                             <ChatMessage key={index.toString()} message={message} />
                         ))}
-                        {/* {loadingStatus && (
+                        {loadingStatus && (
                             <div className="m-5 p-5">
                                 <p className="font-bold"> is replying...</p>
                             </div>
-                        )} */}
+                        )}
                     </div>
                     <div className="m-3 grid items-center">
                         <div className="mx-auto w-[750px]">
@@ -128,12 +128,12 @@ export default function  Chat(props) {
                                 onChange={onChange}
                                 onKeyDown={onKeyDown}
                                 onSubmit={onSubmit}
-                            // loadingStatus={loadingStatus}
+                                loadingStatus={loadingStatus}
                             />
                             :
                             <ChatInput
                                 newMessageText={""}
-                                // loadingStatus={loadingStatus}
+                                loadingStatus={loadingStatus}
                             />
                             }
                         </div>

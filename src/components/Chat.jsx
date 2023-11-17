@@ -73,7 +73,7 @@ export default function  Chat(props) {
         const fetchReply = async () => {
           try {
             // Fetch the chatbot's reply
-            const response = await fetch("/api/ask", {
+            const response = await fetch("https://us-central1-marcus-chat-ae955.cloudfunctions.net/app/api/ask", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ messages }),
@@ -83,7 +83,7 @@ export default function  Chat(props) {
               setMessages([...messages, reply]);
         
             // Store the conversation history
-            await fetch("/api/store", {
+            await fetch("https://us-central1-marcus-chat-ae955.cloudfunctions.net/app/api/store", {
               method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({ uuid, messages: [...messages, reply] }),

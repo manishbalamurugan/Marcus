@@ -14,7 +14,7 @@ function App() {
   return (
       <Router>
         <Routes>
-          <Route exact path="/:chatID" element={<Interview />} />
+          <Route exact path="/:chatId" element={<Interview />} />
           <Route exact path="/chattest" element={<Chat />} />
           <Route exact path="/terms" element={<Terms />} />
         </Routes>

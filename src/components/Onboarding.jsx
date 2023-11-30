@@ -52,8 +52,8 @@ export default function Onboarding(props) {
             'query': chatData,
             'update': profileUpdate
         }
-        props.socket.emit('update-mongo', updateQuery)
-        props.socket.emit('start-interview', chatData)
+        // props.socket.emit('update-mongo', updateQuery)
+        // props.socket.emit('start-interview', chatData)
         setStage(2)
     }
 
@@ -69,7 +69,7 @@ export default function Onboarding(props) {
     return (<>
         <div className="h-full w-full m-10 mt-[5rem]">
             <div className="animate-fadeIn animate-bounce text-gray-200 transition-colors hover:text-gray-900 text-center">
-                <p className="text-4xl font-bold text-opacity-70">We value your feedback.</p>
+                <p className="text-4xl font-bold text-violet-200 text-opacity-90">We value your feedback.</p>
             </div>
             <Transition in={showSubheading}>
                 {state => (
@@ -77,7 +77,7 @@ export default function Onboarding(props) {
                         ...defaultStyle,
                         ...transitionStyles[state]
                     }} className="text-center">
-                        <p className="text-5xl text-sky-500 font-bold text-opacity-70 pt-6"><span className="text-sky-400 font-extrabold">{company}</span> have been invited to participate in this chat</p>
+                        <p className="text-5xl text-violet-200 font-bold text-opacity-90 pt-6">{company} have been invited to meet with Marcus.</p>
                     </div>
                 )}
             </Transition>

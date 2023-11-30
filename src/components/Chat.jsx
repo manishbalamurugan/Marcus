@@ -1,6 +1,7 @@
 import React from "react";
 import { useState, useEffect } from 'react'
 import { v4 as uuidv4 } from "uuid";
+import Header from "../components/Header"
 
 const uuid = uuidv4();
 console.log(uuid);
@@ -108,7 +109,8 @@ export default function  Chat(props) {
 
     return (
         <>
-            <section className="mx-auto h-screen w-screen flex justify-center items-center">
+            <Header/>
+            <section className="mx-auto h-screen w-screen flex justify-center items-center pt-5">
                 <div className="h-[85%] w-[70%] flex flex-col bg-slate-700 bg-opacity-30 rounded-xl">
                     <div className="flex-grow overflow-auto text-xs font-medium">
                         {messages.slice(1).map((message, index) => (
@@ -116,7 +118,7 @@ export default function  Chat(props) {
                         ))}
                         {loadingStatus && (
                             <div className="m-5 p-5">
-                                <p className="font-bold"> is replying...</p>
+                                <p className="font-bold"> <span className="text-emerald-300 font-extrabold">Marcus</span> is replying...</p>
                             </div>
                         )}
                     </div>

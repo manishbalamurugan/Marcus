@@ -1,23 +1,23 @@
 import React from "react";
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { v4 as uuidv4 } from "uuid";
 import Header from "../components/Header"
 
 const uuid = uuidv4();
-console.log(uuid);
+
 
 const ChatMessage = ({ message }) => (
-    <div className={`flex text-white ${message.role === "assistant" ? "justify-start" : "justify-end"} gap-x-5 p-4 m-4 items-center`}>
-        <div className="grid grid-cols-1">
-            <div className={`text-xs font-medium m-1 ${message.role === "assistant" ? "text-left" : "text-right"}`}>
-                {message.role === "assistant" ? "Interviewer" : "User"}
-            </div>
-            <div
-                className={"text-left bg-slate-700 bg-opacity-20 backdropblur-xl shadow-sm rounded-lg p-4 max-w-lg"}
-            >
-                <p className='text-sm text-gray-200 font-medium'>{message.content}</p>
-            </div>
+    <div className={`flex ${message.role === "assistant" ? "justify-start" : "justify-end"} gap-x-5 p-4 m-4 items-center `}>
+      <div className="grid grid-cols-1">
+        <div className={`text-xs font-medium m-1 ${message.role === "assistant" ? "text-left" : "text-right"}`}>
+          {message.role === "assistant" ? "Interviewer" : "User"}
         </div>
+        <div
+          className={`text-left bg-gray-100 shadow-sm rounded-lg p-4 max-w-lg ${message.role === "assistant" ? "ml-0" : "ml-auto"}`}
+        >
+          <p className='text-sm text-gray-800 font-medium'>{message.content}</p>
+        </div>
+      </div>
     </div>
 );
 
@@ -26,7 +26,7 @@ const ChatInput = ({ newMessageText, onChange, onKeyDown, onSubmit, loadingStatu
     <div className="z-20 w-full max-w-full sm:max-w-3xl">
         <form className="flex items-end" onSubmit={onSubmit}>
             <textarea
-                className="mr-2 text-xs text-gray-200 grow resize-none rounded-md font-medium h-10 p-2 bg-gray-100 bg-opacity-10  shadow-sm focus:border-blue-600 focus:outline-none"
+                className="mr-2 text-xs text-gray-800 grow resize-none rounded-md font-medium h-10 p-2 bg-gray-100 shadow-sm focus:border-blue-600 focus:outline-none"
                 value={newMessageText}
                 onChange={onChange}
                 onKeyDown={onKeyDown}
@@ -34,17 +34,21 @@ const ChatInput = ({ newMessageText, onChange, onKeyDown, onSubmit, loadingStatu
             />
             <button
                 className={`h-10 rounded-md ${loadingStatus
-                    ? "bg-slate-900 bg-transparent-90 shadow-sm"
-                    : "bg-sky-800 bg-opacity-20 shadow-sm hover:bg-sky-700 hover:bg-opacity-20"
+                    ? "bg-blue-300 shadow-sm"
+                    : "bg-blue-200 shadow-sm hover:bg-blue-300"
                     } px-1 py-1`}
                 type="submit"
                 disabled={loadingStatus}
             >
-                <p className="font-medium text-white text-xs mx-3">Enter</p>
+                <p className="font-semibold text-gray-800 text-xs mx-3">Enter</p>
             </button>
         </form>
     </div>
 );
+
+
+
+
 
 export default function  Chat(props) {
 
@@ -55,6 +59,12 @@ export default function  Chat(props) {
       const [newMessageText, setNewMessageText] = useState("");
       const [loadingStatus, setLoadingStatus] = useState(false);
       const [interviewStatus, setInterviewStatus] = useState(true);
+
+      const chatContainerRef = React.useRef(null);
+
+      const scrollToBottom = () => {
+        chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
+      };
     
       const onChange = (event) => setNewMessageText(event.target.value);
       const onKeyDown = (event) => {
@@ -68,7 +78,9 @@ export default function  Chat(props) {
         setMessages([...messages, { role: "user", content: newMessageText }]);
         setLoadingStatus(true);
         setNewMessageText("");
-      };                                                                                                                                                                                                                                                                                                                                                                                                                                         
+      };  
+      
+
     
       useEffect(() => {
         const fetchReply = async () => {
@@ -104,46 +116,66 @@ export default function  Chat(props) {
         if(messages.length > 15){
             setInterviewStatus(false)
         }
+
+        scrollToBottom();
+
       }, [loadingStatus]);
 
+      const attendees = ["John Doe", "Jane Smith", "Alex Johnson"];
 
-    return (
+
+      return (
         <>
-            <Header/>
-            <section className="mx-auto h-screen w-screen flex justify-center items-center pt-5">
-                <div className="h-[85%] w-[70%] flex flex-col bg-slate-700 bg-opacity-30 rounded-xl">
-                    <div className="flex-grow overflow-auto text-xs font-medium">
-                        {messages.slice(1).map((message, index) => (
-                            <ChatMessage key={index.toString()} message={message} />
-                        ))}
-                        {loadingStatus && (
-                            <div className="m-5 p-5">
-                                <p className="font-bold"> <span className="text-emerald-300 font-extrabold">Marcus</span> is replying...</p>
-                            </div>
-                        )}
-                    </div>
-                    <div className="m-3 grid items-center">
-                        <div className="mx-auto w-[750px]">
-                            {interviewStatus ? 
-                            <ChatInput
-                                newMessageText={newMessageText}
-                                onChange={onChange}
-                                onKeyDown={onKeyDown}
-                                onSubmit={onSubmit}
-                                loadingStatus={loadingStatus}
-                            />
-                            :
-                            <ChatInput
-                                newMessageText={""}
-                                loadingStatus={loadingStatus}
-                            />
-                            }
-                        </div>
-                    </div>
+          <section className="mx-auto h-screen w-screen flex justify-center items-center pt-5 bg-gray-100 flex flex-wrap gap-5">
+            <div className="h-[85%] w-[70%] flex flex-col bg-white rounded-xl shadow-xl">
+              <div className="flex items-center justify-between p-4 border-b border-gray-200">
+                <h2 className="text-lg font-semibold">Marcus PHQ-9 Screening</h2>
+                <div className="flex items-center space-x-2">
+                  <span className="text-sm font-medium text-gray-500">Meeting ID: 1234</span>
+                  <span className="text-sm font-medium text-gray-500">Status: In Progress</span>
                 </div>
-            </section>
-
+              </div>
+              <div className="flex-grow overflow-auto text-xs font-medium" ref={chatContainerRef}>
+                {messages.slice(1).map((message, index) => (
+                    <ChatMessage key={index.toString()} message={message} />
+                ))}
+                {loadingStatus && (
+                    <div className="m-5 p-5">
+                        <p className="font-bold"> <span className="text-emerald-300 font-extrabold">Marcus</span> is replying...</p>
+                    </div>
+                )}
+              </div>
+              <div className="m-3 grid items-center">
+                <div className="mx-auto w-[750px]">
+                  <ChatInput
+                    newMessageText={newMessageText}
+                    onChange={onChange}
+                    onKeyDown={onKeyDown}
+                    onSubmit={onSubmit}
+                    loadingStatus={loadingStatus}
+                  />
+                </div>
+              </div>
+            </div>
+            <div className="w-64 h-[85%]">
+                <div className="pt-6 border-b border-gray-200">
+                    <h3 className="text-lg font-semibold mb-2">Current Attendees</h3>
+                </div>
+                <div className="flex-1 overflow-y-auto">
+                    <ul>
+                    {attendees.map((attendee, index) => (
+                        <li key={index} className="flex items-center space-x-2 p-4 hover:bg-gray-100">
+                        <div className="w-12 h-12 bg-gray-300 rounded-full"></div>
+                        <div>
+                            <p className="text-sm font-medium">{attendee}</p>
+                            <p className="text-xs text-gray-500">In Meeting</p>
+                        </div>
+                        </li>
+                    ))}
+                    </ul>
+                </div>
+            </div>
+          </section>
         </>
-    )
-
+      );
 }

@@ -33,7 +33,7 @@ export default function Header(props) {
               </defs>
               <rect width="32" height="32" rx="16" fill="url(#footer-logo)" fillRule="nonzero" />
             </svg>
-            <h1 className='ml-3 mb-1 text-lg font-extrabold text-white'>marcus.</h1>
+            <h1 className='ml-3 mb-1 text-lg font-extrabold text-black'>Marcus.</h1>
           </div>
 
           {/* Desktop navigation */}

@@ -1,119 +1,128 @@
 import { Transition } from 'react-transition-group';
-import { useState, useEffect } from 'react'
+import { useState, useEffect } from 'react';
 
 export default function Onboarding(props) {
-    const stage = props.stage
-    const setStage = props.setStage
-    const company = props.company
-    const [showSubheading, setShowSubheading] = useState(false);
-    const [showInputs, setShowInputs] = useState(false);
-    const [showTerms, setShowTerms] = useState(false);
-    const [termsAgreed, setTermsAgreed] = useState(false);
-    const [name, setName] = useState("")
-    const [email, setEmail] = useState("")
+  const stage = props.stage;
+  const setStage = props.setStage;
+  const company = props.company;
+  const [showSubheading, setShowSubheading] = useState(false);
+  const [showInputs, setShowInputs] = useState(false);
+  const [showTerms, setShowTerms] = useState(false);
+  const [termsAgreed, setTermsAgreed] = useState(false);
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
 
+  useEffect(() => {
+    setTimeout(() => {
+      setShowSubheading(true);
+    }, 1750);
+    setTimeout(() => {
+      setShowInputs(true);
+    }, 2000);
+  }, []);
 
-    useEffect(() => {
-        setTimeout(() => {
-            setShowSubheading(true);
-        }, 1750);
+  const duration = 300;
+  const defaultStyle = {
+    transition: `opacity ${duration}ms ease-in-out`,
+    opacity: 0,
+  };
+  const transitionStyles = {
+    entering: { opacity: 0 },
+    entered: { opacity: 1 },
+    exiting: { opacity: 0 },
+    exited: { opacity: 0 },
+  };
 
-
-        setTimeout(() => {
-            setShowInputs(true);
-        }, 2000);
-
-    })
-
-    const duration = 300;
-    const defaultStyle = {
-        transition: `opacity ${duration}ms ease-in-out`,
-        opacity: 0,
-    }
-    const transitionStyles = {
-        entering: { opacity: 0 },
-        entered: { opacity: 1 },
-        exiting: { opacity: 0 },
-        exited: { opacity: 0 },
+  function startInterview() {
+    var profileUpdate = {
+      "customerInfo.name": name,
+      "customerInfo.email": email,
+      "status": "started",
     };
+    var chatData = { linkID: props.linkID };
+    var updateQuery = {
+      collection: "links",
+      query: chatData,
+      update: profileUpdate,
+    };
+    // props.socket.emit('update-mongo', updateQuery)
+    // props.socket.emit('start-interview', chatData)
+    setStage(2);
+  }
 
-     function startInterview() {
-        var profileUpdate = {
-            "customerInfo.name": name,
-            "customerInfo.email" : email,
-            "status": "started"   
-        }
-        var chatData = {
-            'linkID': props.linkID
-        }
+  function checkInput() {
+    return email.length > 0 && name.length > 0;
+  }
 
-        var updateQuery = {
-            'collection' : 'links',
-            'query': chatData,
-            'update': profileUpdate
-        }
-        // props.socket.emit('update-mongo', updateQuery)
-        // props.socket.emit('start-interview', chatData)
-        setStage(2)
-    }
+  function handleCheck() {
+    setTermsAgreed(!termsAgreed);
+  }
 
-    function checkInput() {
-        return email.length > 0 && name.length > 0
-    }
-
-    function handleCheck(){
-        setTermsAgreed(!termsAgreed)
-    }
-
-
-    return (<>
-        <div className="h-full w-full m-10 mt-[5rem]">
-            <div className="animate-fadeIn animate-bounce text-gray-200 transition-colors hover:text-gray-900 text-center">
-                <p className="text-4xl font-bold text-violet-200 text-opacity-90">We value your feedback.</p>
-            </div>
-            <Transition in={showSubheading}>
-                {state => (
-                    <div style={{
-                        ...defaultStyle,
-                        ...transitionStyles[state]
-                    }} className="text-center">
-                        <p className="text-5xl text-violet-200 font-bold text-opacity-90 pt-6">{company} have been invited to meet with Marcus.</p>
-                    </div>
+  return (
+    <>
+      <div className="h-screen w-full flex flex-col items-center justify-center bg-gray-100">
+        <div className="w-[50%] lg:w-[40%] h-[70%] bg-white shadow-xl rounded-lg p-10">
+          <h1 className="text-4xl font-bold text-gray-900 mb-6 text-center">Welcome!</h1>
+          <p className="text-gray-600 mb-6 text-center">Please enter your details to join the meeting.</p>
+          <Transition in={showSubheading}>
+            {(state) => (
+              <div
+                style={{ ...defaultStyle, ...transitionStyles[state] }}
+                className="text-center mb-6"
+              >
+                <p className="text-xl text-gray-700">
+                  You have been invited to meet with <span className="font-bold">Marcus</span>.
+                </p>
+              </div>
+            )}
+          </Transition>
+          <Transition in={showInputs}>
+            {(state) => (
+              <div
+                style={{ ...defaultStyle, ...transitionStyles[state] }}
+                className="mb-6"
+              >
+                <input
+                  id="name"
+                  className="w-full border border-gray-300 rounded-md py-3 px-4 text-gray-700 mb-4"
+                  type="text"
+                  placeholder="Your Name"
+                  onChange={(e) => setName(e.target.value)}
+                />
+                <input
+                  id="email"
+                  className="w-full border border-gray-300 rounded-md py-3 px-4 text-gray-700 mb-4"
+                  type="email"
+                  placeholder="Your Email"
+                  onChange={(e) => setEmail(e.target.value)}
+                />
+                {checkInput() && (
+                  <div className="flex items-center mb-4">
+                    <input
+                      type="checkbox"
+                      onChange={handleCheck}
+                      id="termsAgreement"
+                      className="rounded border-gray-300 text-blue-600 mr-2"
+                    />
+                    <label htmlFor="termsAgreement" className="text-gray-700">
+                      I agree to the terms and conditions
+                    </label>
+                  </div>
                 )}
-            </Transition>
-            <Transition in={showInputs}>
-                {state => (
-                    <div className="grid grid-cols-1 items-center">
-                        <div style={{
-                            ...defaultStyle,
-                            ...transitionStyles[state]
-                        }} className="mx-auto text-center mt-14 py-10 bg-slate-900 w-[40%] p-4 gap-y-2 rounded-lg grid grid-cols-1 items-center">
-                            <div className="mx-14 flex items-center gap-x-5">
-                                <p className="text-sky-200 font-bold text-lg text-left">Name</p>
-                                <input id="name" className="rounded-md mt-1 bg-gray-100 bg-opacity-10 p-2 text-gray-400 font-medium w-[100%]" type="text" onChange={(e) => setName(e.target.value)} />
-                            </div>
-                            <div className="mx-14 flex items-center gap-x-6 mt-5">
-                                <p className="text-sky-200 font-bold text-lg text-left ">Email</p>
-                                <input id="email" className="rounded-md mt-1 bg-gray-100 bg-opacity-10 p-2 text-gray-400 font-medium w-[100%]" type="email" onChange={(e) => setEmail(e.target.value)} />
-                            </div>
-                            {
-                                checkInput() ?
-                                <div className="mx-auto flex items-center gap-x-3 mt-8">
-                                    <input className="bg-red-400 accent-blue-700 bg-opacity-10 " type="checkbox" onChange={handleCheck}/>
-                                    <p className="text-sky-100 text-sm font-semibold text-left">I agree to the <span onClick={() => window.location='/terms'}>terms</span></p>
-                                </div>
-                                :
-                                <></>
-                            }
-
-                        </div>
-                    </div>
-                )}
-            </Transition>
-            
-                <div className={`${termsAgreed ? '' : 'hidden'} w-full text-center mt-10`}>
-                    <button className="text-white p-2 mt-5 rounded-md font-bold" onClick={startInterview}>Continue →</button>
-                </div>
+              </div>
+            )}
+          </Transition>
+          <div className={`${termsAgreed ? '' : 'hidden'} text-center`}>
+            <button
+              className="bg-blue-600 text-white py-3 px-6 rounded-md font-semibold text-lg"
+              onClick={startInterview}
+              disabled={!checkInput() || !termsAgreed}
+            >
+              Join the Meeting
+            </button>
+          </div>
         </div>
-    </>)
+      </div>
+    </>
+  );
 }

@@ -6,7 +6,6 @@ const client = new mongodb.MongoClient(uri);
 
 module.exports = {
     connect: () => {
-        // Connect to MongoDB
         client.connect()
             .then(() => {
                 console.log('Connected to MongoDB');

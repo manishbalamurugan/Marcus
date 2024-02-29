@@ -5,7 +5,9 @@ import Footer from '../components/Footer';
 import Onboarding from '../components/Onboarding';
 import Chat from "../components/Chat";
 import InvalidID from '../components/InvalidID';
+import { v4 as uuidv4 } from "uuid";
 
+const uuid = uuidv4();
 
 export default function Interview(props) {
     // stage 1 
@@ -14,7 +16,7 @@ export default function Interview(props) {
     const chatID = useParams()["chatID"];
     const [stage, setStage] = useState(0);
     const [linkValid, setLinkValid] = useState(false)
-    const [company, setCompany] = useState({})
+
 
     useEffect(() => {
         //validateId()
@@ -62,14 +64,14 @@ export default function Interview(props) {
     return (
             <>
                 <Header />
-                <div className="pt-20 h-screen backdrop-blur-xl bg-gradient-to-t from-[#070E25] to-black overflow-auto">
-                    <div className="flex h-full w-full items-center justify-center pb-20">
+                <div className="h-screen backdrop-blur-xl bg-gradient-to-t from-[#070E25] to-black overflow-auto">
+                    <div className="flex h-full w-full items-center justify-center">
                         {
                             stage != 2 ?
-                                <Onboarding stage={stage} setStage={setStage} company="You" socket={socket} linkID={chatID}/>
+                                <Onboarding stage={stage} setStage={setStage} company="You" socket={socket} uuid={uuid}/>
                                 :
                                 <div className="h-screen w-screen">
-                                    <Chat socket={socket} linkID={chatID} />
+                                    <Chat socket={socket} uuid={uuid} />
                                 </div>
                         }
                         <Footer />

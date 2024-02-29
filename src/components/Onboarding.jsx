@@ -2,6 +2,9 @@ import { Transition } from 'react-transition-group';
 import { useState, useEffect } from 'react';
 
 export default function Onboarding(props) {
+  const uuid = props.uuid;
+  const qualt_id = uuid;
+  const conversation_id = uuid;
   const stage = props.stage;
   const setStage = props.setStage;
   const company = props.company;
@@ -33,23 +36,26 @@ export default function Onboarding(props) {
     exited: { opacity: 0 },
   };
 
-  function startInterview() {
-    var profileUpdate = {
-      "customerInfo.name": name,
-      "customerInfo.email": email,
-      "status": "started",
-    };
-    var chatData = { linkID: props.linkID };
-    var updateQuery = {
-      collection: "links",
-      query: chatData,
-      update: profileUpdate,
-    };
-    // props.socket.emit('update-mongo', updateQuery)
-    // props.socket.emit('start-interview', chatData)
+  async function startInterview(e) {
+    e.preventDefault();
+    try {
+      // const response = await fetch("https://us-central1-marcus-chat-ae955.cloudfunctions.net/app/api/register", {
+      //   method: "POST",
+      //   headers: { "Content-Type": "application/json" },
+      //   body: JSON.stringify({ name, email, uuid, uuid }),
+      // });
+      const response = await fetch("https://us-central1-marcus-chat-ae955.cloudfunctions.net/app/api/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, email, qualt_id, conversation_id, uuid }),
+      });
+    } catch (error) {
+      alert(error.message);
+    }
     setStage(2);
   }
 
+  
   function checkInput() {
     return email.length > 0 && name.length > 0;
   }
@@ -57,6 +63,8 @@ export default function Onboarding(props) {
   function handleCheck() {
     setTermsAgreed(!termsAgreed);
   }
+
+
 
   return (
     <>

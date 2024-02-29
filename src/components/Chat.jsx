@@ -1,5 +1,12 @@
 import React from "react";
 import { useState, useEffect, useRef } from 'react'
+import Agent from './app/Agent';
+
+const addMessage = (message) => {
+  setMessages((prevMessages) => [...prevMessages, message]);
+};
+
+const agent = new Agent(addMessage)
 
 const ChatMessage = ({ message, playAudio }) => (
     <div className={`flex ${message.role === "assistant" ? "justify-start" : "justify-end"} gap-x-5 p-4 m-4 items-center `}>
@@ -74,6 +81,7 @@ export default function  Chat(props) {
     
       const onSubmit = async (event) => {
         event.preventDefault();
+        await agent.determineNext(newMessageText);
         setMessages([...messages, { role: "user", content: newMessageText }]);
         setLoadingStatus(true);
         setNewMessageText("");
@@ -81,11 +89,8 @@ export default function  Chat(props) {
 
 
       //TODO: AUDIO; Come back to this. 
-      
       const playAudio = async (text) => {
-
         try {
-      
           const response = await fetch("http://localhost:3030/api/tts", {
             method: "POST",
             headers: {
@@ -93,19 +98,14 @@ export default function  Chat(props) {
             },
             body: JSON.stringify({text})  
           });
-          
           const arrayBuffer = await response.arrayBuffer();
-      
           const audioData = new Uint8Array(arrayBuffer);
-      
           const audio = new Audio();
           audio.src = URL.createObjectURL(new Blob([audioData]));
           audio.play();
-      
         } catch (error) {
           console.log("Error fetching audio", error);
         }
-      
       }
 
       
@@ -120,15 +120,16 @@ export default function  Chat(props) {
             // Fetch URL: "https://us-central1-marcus-chat-ae955.cloudfunctions.net/app/api/ask"
             // Store URL: "https://us-central1-marcus-chat-ae955.cloudfunctions.net/app/api/store"
             // Fetch the chatbot's reply
-            const response = await fetch("https://us-central1-marcus-chat-ae955.cloudfunctions.net/app/api/ask", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ messages }),
-              });
-              const responseBody = await response.json();
-              const reply = response.status === 200 ? responseBody.reply : responseBody.error.reply;
-              setMessages([...messages, reply]);
-        
+            // const response = await fetch("https://us-central1-marcus-chat-ae955.cloudfunctions.net/app/api/ask", {
+            //     method: "POST",
+            //     headers: { "Content-Type": "application/json" },
+            //     body: JSON.stringify({ messages }),
+            //   });
+            //   const responseBody = await response.json();
+            //   const reply = response.status === 200 ? responseBody.reply : responseBody.error.reply;
+            //   setMessages([...messages, reply]);
+
+
             // Store the conversation history
             await fetch("https://us-central1-marcus-chat-ae955.cloudfunctions.net/app/api/store", {
               method: "POST",

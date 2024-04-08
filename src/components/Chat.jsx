@@ -2,13 +2,8 @@ import React from "react";
 import { useState, useEffect, useRef } from 'react'
 import Agent from './app/Agent';
 
-const addMessage = (message) => {
-  setMessages((prevMessages) => [...prevMessages, message]);
-};
 
-const agent = new Agent(addMessage)
-
-const ChatMessage = ({ message, playAudio }) => (
+const ChatMessage = ({ message }) => (
     <div className={`flex ${message.role === "assistant" ? "justify-start" : "justify-end"} gap-x-5 p-4 m-4 items-center `}>
       <div className="grid grid-cols-1">
         <div className={`text-xs font-medium m-1 ${message.role === "assistant" ? "text-left" : "text-right"}`}>
@@ -81,10 +76,11 @@ export default function  Chat(props) {
     
       const onSubmit = async (event) => {
         event.preventDefault();
-        await agent.determineNext(newMessageText);
         setMessages([...messages, { role: "user", content: newMessageText }]);
-        setLoadingStatus(true);
         setNewMessageText("");
+        setLoadingStatus(true);
+        await agent.determineNext(newMessageText);
+        // setMessages([...messages, { role: "user", content: newMessageText }]);
       };  
 
 
@@ -107,6 +103,12 @@ export default function  Chat(props) {
           console.log("Error fetching audio", error);
         }
       }
+
+      const addMessage = (message) => {
+        setMessages((prevMessages) => [...prevMessages, message]);
+      };
+      
+      const agent = new Agent(addMessage)
 
       
       useEffect(() => {
@@ -134,7 +136,7 @@ export default function  Chat(props) {
             await fetch("https://us-central1-marcus-chat-ae955.cloudfunctions.net/app/api/store", {
               method: "POST",
               headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ uuid, messages: [...messages, reply] }),
+              body: JSON.stringify({ uuid, messages: [...messages] }),
             });
             } catch {
               const reply = { role: "assistant", content: "An error has occured." };
@@ -191,6 +193,7 @@ export default function  Chat(props) {
               </div>
               <div className="flex-grow overflow-auto text-xs font-medium" ref={chatContainerRef}>
                 {messages.slice(1).map((message, index) => (
+                    console.log(message),
                     <ChatMessage key={index.toString()} message={message} playAudio={playAudio} />
                 ))}
                 {loadingStatus && (

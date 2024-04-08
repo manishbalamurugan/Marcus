@@ -33,6 +33,41 @@ router.get("/user/:uuid", async (req, res) => {
   }
 });
 
+
+router.post("/nextCommand", async (req, res) => {
+  const functions = req.body.functions;
+  const functionChoice = req.body.functionChoice;
+  const messages = req.body.messages;
+
+  try{
+    if(functions == null || functionChoice == null){
+      throw new Error("Choice Error. Agent.jsx");
+    }
+    const response = await openai.chat.completions.create({
+      model: "gpt-4",
+      messages: messages,
+      temperature: 1,
+      tools: functions,
+      tool_choice: functionChoice
+    });
+    const reply = response.choices[0].message.tool_calls;
+    return res.status(200).json({
+      success: true,
+      reply,
+    });
+  } catch (error){
+    console.log(`Thrown error: ${error.message}`);
+    const reply = {
+      role: "assistant",
+      content: "An error has occurred.",
+    };
+
+    return res.status(500).json({
+      error: { reply },
+    });
+  }
+}); 
+
 router.post("/ask", async (req, res) => {
   const messages = req.body.messages;
   try {

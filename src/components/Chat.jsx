@@ -56,7 +56,6 @@ export default function  Chat(props) {
       const [newMessageText, setNewMessageText] = useState("");
       const [loadingStatus, setLoadingStatus] = useState(false);
       const [interviewStatus, setInterviewStatus] = useState(true);
-      const [audioContext, setAudioContext] = useState(null);
 
       const chatContainerRef = React.useRef(null);
 
@@ -80,29 +79,7 @@ export default function  Chat(props) {
         setNewMessageText("");
         setLoadingStatus(true);
         await agent.determineNext(newMessageText);
-        // setMessages([...messages, { role: "user", content: newMessageText }]);
       };  
-
-
-      //TODO: AUDIO; Come back to this. 
-      const playAudio = async (text) => {
-        try {
-          const response = await fetch("http://localhost:3030/api/tts", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json"
-            },
-            body: JSON.stringify({text})  
-          });
-          const arrayBuffer = await response.arrayBuffer();
-          const audioData = new Uint8Array(arrayBuffer);
-          const audio = new Audio();
-          audio.src = URL.createObjectURL(new Blob([audioData]));
-          audio.play();
-        } catch (error) {
-          console.log("Error fetching audio", error);
-        }
-      }
 
       const addMessage = (message) => {
         setMessages((prevMessages) => [...prevMessages, message]);
@@ -110,29 +87,9 @@ export default function  Chat(props) {
       
       const agent = new Agent(addMessage)
 
-      
-      useEffect(() => {
-        setAudioContext(new (window.AudioContext || window.webkitAudioContext)());
-      }, []);
-
       useEffect(() => {
         const fetchReply = async () => {
           try {
-            // Original URLs:
-            // Fetch URL: "https://us-central1-marcus-chat-ae955.cloudfunctions.net/app/api/ask"
-            // Store URL: "https://us-central1-marcus-chat-ae955.cloudfunctions.net/app/api/store"
-            // Fetch the chatbot's reply
-            // const response = await fetch("https://us-central1-marcus-chat-ae955.cloudfunctions.net/app/api/ask", {
-            //     method: "POST",
-            //     headers: { "Content-Type": "application/json" },
-            //     body: JSON.stringify({ messages }),
-            //   });
-            //   const responseBody = await response.json();
-            //   const reply = response.status === 200 ? responseBody.reply : responseBody.error.reply;
-            //   setMessages([...messages, reply]);
-
-
-            // Store the conversation history
             await fetch("https://us-central1-marcus-chat-ae955.cloudfunctions.net/app/api/store", {
               method: "POST",
               headers: { "Content-Type": "application/json" },
@@ -179,6 +136,10 @@ export default function  Chat(props) {
         fetchUser();
       }, [uuid]);
 
+      useEffect(() => {
+        console.log("chat messages:", messages.map(msg => `${msg.role}: ${msg.content}`).join(''));
+      }, [messages]);
+
 
       return (
         <>
@@ -193,8 +154,7 @@ export default function  Chat(props) {
               </div>
               <div className="flex-grow overflow-auto text-xs font-medium" ref={chatContainerRef}>
                 {messages.slice(1).map((message, index) => (
-                    console.log(message),
-                    <ChatMessage key={index.toString()} message={message} playAudio={playAudio} />
+                    <ChatMessage key={index.toString()} message={message} />
                 ))}
                 {loadingStatus && (
                     <div className="m-5 p-5">

@@ -148,38 +148,4 @@ router.post("/store", async (req, res) => {
 });
 
 
-router.post("/tts", async (req, res) => {
-
-  const text = req.body.text;
-
-  try {
-    if (!text) {
-      throw new Error("No text provided"); 
-    }
-
-    const audioStream = new stream.PassThrough(); 
-    
-    const buffer = await openai.audio.speech.create({
-      model: "tts-1",
-      voice: "alloy",
-      input: text
-    });
-    
-    const audio = Uint8Array.from(buffer); 
-
-    audioStream.end(audio);
-
-
-    res.set('Content-Type', 'audio/mp3');
-    res.set('Content-Length', buffer.length);  
-
-    audioStream.pipe(res);
-
-  } catch (error) {
-    console.log(error);
-    return res.status(500).json({ error: "Error synthesizing audio" });
-  }
-
-});
-
 module.exports = router;

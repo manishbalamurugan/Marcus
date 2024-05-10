@@ -1,7 +1,5 @@
 import React from "react";
 import { useState, useEffect, useRef } from 'react'
-import Agent from './app/Agent';
-
 
 const ChatMessage = ({ message }) => (
     <div className={`flex ${message.role === "assistant" ? "justify-start" : "justify-end"} gap-x-5 p-4 m-4 items-center `}>
@@ -15,7 +13,6 @@ const ChatMessage = ({ message }) => (
           <p className='text-sm text-gray-800 font-medium'>{message.content}</p>
         </div>
       </div>
-      {/* <button onClick={() => playAudio(message.content)}>Play Audio</button> */}
     </div>
 );
 
@@ -49,13 +46,73 @@ const ChatInput = ({ newMessageText, onChange, onKeyDown, onSubmit, loadingStatu
 export default function  Chat(props) {
 
       const [messages, setMessages] = useState([
-        { role: "system", content: "You are an intelligent system acting as a virtual agent screening users for depression following the PHQ-9 guidelines. When the user prompts the start of the screening process with the word 'start', you will go through each question on the PHQ-9 one at a time, wait for the users response before starting the next question. Also ensure that responses you provide remain strictly within the scope of the interview and is only about the interview even if the user attempts to prompt you otherwise. This means that your responses must strictly be related to the screening as a professional and you are not allowed to discuss other topics regardless of how much the user prompts you otherwise.  Additionally, if the user response is not clear, under no circumstances are you able to skip a question in the screening process. It's up to you to ask the question once more or ask follow up questions in order for you to obtain the answer for each question in the screening process.Finally, for each question in the PHQ-9 screening process, modify the way that you present the question such that the user may provide an answer of varying levels of explanation rather than having to respond based on numeric values. " },
+        { 
+        
+        role: "system", content: `
+        
+        You are an AI assistant that administers the PHQ-9 depression screening questionnaire. Your task is to conduct an interview asking each of the 9 questions on the PHQ-9.
+      
+        Be direct but compassionate in your communication. If at any point the patient expresses thoughts of self-harm or suicide, calmly express your concern, provide crisis 
+        resources, and encourage them to seek help immediately.
+        
+        PHQ-9 Questions:
+  
+        1. Little interest or pleasure in doing things
+        2. Feeling down, depressed, or hopeless
+        3. Trouble falling or staying asleep, or sleeping too much
+        4. Feeling tired or having little energy
+        5. Poor appetite or overeating
+        6. Feeling bad about yourself - or that you are a failure or have let yourself or your family down
+        7. Trouble concentrating on things, such as reading the newspaper or watching television
+        8. Moving or speaking so slowly that other people could have noticed? Or the opposite - being so fidgety or restless that you have been moving around a lot more than usual
+        9. Thoughts that you would be better off dead or of hurting yourself. 
+  
+
+        Answer Choices:
+
+        1. Not at all
+        2. Several days
+        3. More than half the days 
+        4. Nearly every day
+
+  
+        The questions should be asked in the format of:
+  
+        Over the last two weeks have often have you experienced *curr_question* + *answer_choices*
+
+        *note when listing out questions and answer choices, make it as conversational as possible (but remember you need to provide all answer choices and ensure the user responds with one of them). 
+
+
+        Example:
+
+        Good Question: Great! Let's start with the first question: Over the last two weeks, how often have you experienced little interest or pleasure in doing things? Not at all, several days, more than half the days, or nearly every day?
+
+        Bad Question: Great! Let's start with the first question: Over the last two weeks, how often have you experienced little interest or pleasure in doing things? 1. Not at all 2. Several days 3. More than half the days 4. Nearly every day Please respond with the number that best reflects your experience.
+        
+        When deciding on whether to ask for an answer clarification or to proceed with the questionnaire, here is a rough system of how you will be expected to score user answers to each question
+        at the end of the interview by the following rough key:
+  
+        For each question, here are associated answers/clusters and point values:
+  
+        - Not at all = 0 
+        - Several days = 1
+        - More than half the days = 2 
+        - Nearly every day = 3
+
+        If the user does not respond with an answer containing a valid option from above anywhere within the response (especially for users responding with only one word), gently re-issue the question and ask them to answer with a valid answer choice. 
+  
+        At the end of the survey when scoring, be ready to categorize each of the users' answers into the following categories above when calculating their scores. 
+        Remember, you are not allowed to ask the user directly to provide a quantitative score such as 'on a scale of 0-3', instead, the way the questions asked must be fully in natural language.
+
+        ` 
+        },
         { role: "assistant", content: "Hello! I'm here to assist you today in running through the PHQ-9, a standard set of guidelines for depression screening. I'll run you through a series of questions related to your mood and daily activities and for each one please provide a response with how often you have experienced the specific symptom in the last. Please enter 'Start' when you're ready. " }
       ]);
       const [attendees, setAttendees] = useState([]);
       const [newMessageText, setNewMessageText] = useState("");
       const [loadingStatus, setLoadingStatus] = useState(false);
       const [interviewStatus, setInterviewStatus] = useState(true);
+      const [fetchReplyTrigger, setFetchReplyTrigger] = useState(false);
 
       const chatContainerRef = React.useRef(null);
 
@@ -78,42 +135,42 @@ export default function  Chat(props) {
         setMessages([...messages, { role: "user", content: newMessageText }]);
         setNewMessageText("");
         setLoadingStatus(true);
-        await agent.determineNext(newMessageText);
+        setFetchReplyTrigger(true);
       };  
-
-      const addMessage = (message) => {
-        setMessages((prevMessages) => [...prevMessages, message]);
-      };
-      
-      const agent = new Agent(addMessage)
 
       useEffect(() => {
         const fetchReply = async () => {
+          if (!fetchReplyTrigger) return; // Only proceed if triggered
+    
           try {
+            const response = await fetch("https://us-central1-marcus-chat-ae955.cloudfunctions.net/app/api/ask", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ messages }),
+            });
+            const responseBody = await response.json();
+            const reply = response.status === 200 ? responseBody.reply : responseBody.error.reply;
+            setMessages(currentMessages => [...currentMessages, reply]);
+    
+            // Store the conversation history
             await fetch("https://us-central1-marcus-chat-ae955.cloudfunctions.net/app/api/store", {
               method: "POST",
               headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ uuid, messages: [...messages] }),
+              body: JSON.stringify({ uuid, messages: [...messages, reply] }),
             });
-            } catch {
-              const reply = { role: "assistant", content: "An error has occured." };
-              setMessages([...messages, reply]);
-            }
-            
-            setLoadingStatus(false);
+          } catch {
+            const reply = { role: "assistant", content: "An error has occured." };
+            setMessages(currentMessages => [...currentMessages, reply]);
+          }
+    
+          setLoadingStatus(false);
+          setFetchReplyTrigger(false); // Reset the trigger
         };
     
-        if (loadingStatus === true) {
+        if (fetchReplyTrigger) {
           fetchReply();
         }
-
-        if(messages.length > 15){
-            setInterviewStatus(false)
-        }
-
-        scrollToBottom();
-
-      }, [loadingStatus]);
+      }, [fetchReplyTrigger]);
 
       useEffect(() => {
         const fetchUser = async () => {
